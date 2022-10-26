@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "supreme-spoon"
+version = "0.1.0"
+description = ""
+authors = ["Jon Herron <jon.herron@yahoo.com>"]
+license = "LGPL"
+readme = "README.md"
+packages = [{include = "supreme_spoon"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+lxml = "^4.9.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
