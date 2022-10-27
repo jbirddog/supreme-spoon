@@ -116,8 +116,7 @@ if __name__ == "__main__":
             if ks_len == 0:
                 k = "identity"
             elif ks_len > 1:
-                k = ks[0] #f"fan_out({ks})"
-                return f"{f}(\"{id}\", {config}, fan_out([{k}]))"
+                k = f"fan_out([{', '.join(ks)}])"
             else:
                 k = ks[0]
             csp = f"{f}(\"{id}\", {config}, {k})"
