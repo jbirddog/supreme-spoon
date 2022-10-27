@@ -31,14 +31,68 @@ class BpmnFrontend:
 # backend/python.py
 class PythonBackend:
     @classmethod
-    def emit(self, data):
-        print(list(data))
+    def _csp(self, kinda_ast):
+        prog = """
+def start_event(k):
+    print("Hello from start_event")
+    k()
+"""
+        return prog
+
+    @classmethod
+    def emit(self, kinda_ast):
+        return self._csp(kinda_ast)
 
 class Compiler:
+
+    @classmethod
+    def _extract_sequence_flows(self, data):
+        def is_sequence_flow(datum):
+            return datum[0] == 'sequenceFlow'
+        def is_not_sequence_flow(datum):
+            return not is_sequence_flow(datum)
+
+        sequence_flows = filter(is_sequence_flow, data)
+        non_sequence_flows = filter(is_not_sequence_flow, data)
+
+        return (sequence_flows, non_sequence_flows)
+
+    @classmethod
+    def _by_id(self, data):
+        return {d[1]["id"]: d for d in data}
+
+    # {'SequenceFlow_0lvudp8': ('sequenceFlow', {'id': 'SequenceFlow_0lvudp8', 'sourceRef': 'StartEvent_1', 'targetRef': 'EndEvent_0q4qzl9'}, None)}
+    # [('startEvent', {'id': 'StartEvent_1'}, [('outgoing', {}, 'SequenceFlow_0lvudp8')]), ('endEvent', {'id': 'EndEvent_0q4qzl9'}, [('incoming', {}, 'SequenceFlow_0lvudp8')])]
+
+    @classmethod
+    def _resolve(self, sequence_flows):
+        sequence_flows_by_id = self._by_id(sequence_flows)
+
+        map_to = lambda r: lambda v: (v[0], v[1], sequence_flows_by_id[v[2]][1][r])
+        resolvers = {"incoming": map_to("sourceRef"), "outgoing": map_to("targetRef")}
+
+        def resolve_elem_value(v):
+            return resolvers[v[0]](v) if v[0] in resolvers else v
+
+        def resolver(elem):
+            return (elem[0], elem[1], list(map(resolve_elem_value, elem[2])))
+
+        return resolver
+
+    @classmethod
+    def _resolve_sequence_flows(self, process_data):
+        sequence_flows, elems = self._extract_sequence_flows(process_data[2])
+        resolved_elems = map(self._resolve(sequence_flows), elems)
+        return list(resolved_elems)
+
     @classmethod
     def compile(self, input_filename, output_filename):
         process_data = BpmnFrontend.parse(input_filename)
-        PythonBackend.emit(process_data)
+        flowed_process_data = map(self._resolve_sequence_flows, process_data)
+        prog = PythonBackend.emit(flowed_process_data)
+
+        with open(output_filename, 'w') as f:
+            f.write(prog)
 
 if __name__ == "__main__":
     import sys
