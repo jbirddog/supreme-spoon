@@ -13,9 +13,8 @@ def start_event(id, k):
         return k(data)
     return impl
 
-
 if __name__ == "__main__":
-    print("Running 'empty_workflow'...")
-    workflow = start_event("StartEvent_1", end_event("EndEvent_0q4qzl9", identity))
+    print("Running workflow 'empty_workflow'...")
+    workflow = start_event('se_1', end_event('ee_1', identity))
     result = workflow({})
-    print(f"result: {result}")
+    print(result)
