@@ -4,7 +4,7 @@ from lxml import etree
 
 class BpmnFrontend:
     @classmethod
-    def _parse_xml(self, bpmn_filename):
+    def parse(self, bpmn_filename):
         with open(bpmn_filename, 'r') as f:
             bpmn = etree.parse(f)
 
@@ -28,38 +28,24 @@ class BpmnFrontend:
         process_data = map(tupled, process_nodes)
         return process_data
 
-    # move to middle
-    @classmethod
-    def _build_process_maps(self, process_data):
-        elems, flows = {}, {}
-
-        for value in process_data[2]:
-            d = elems if value[0] != "sequenceFlow" else flows
-            d[value[1]["id"]] = value
-
-        return (process_data[0], elems, flows)
-
-    @classmethod
-    def parse(self, bpmn_filename):
-        data = self._parse_xml(bpmn_filename)
-        data = map(self._build_process_maps, data)
-        print(list(data))
-
 # backend/python.py
 class PythonBackend:
-    def emit(self):
-        pass
+    @classmethod
+    def emit(self, data):
+        print(list(data))
 
 class Compiler:
-    def compile(self):
-        pass
+    @classmethod
+    def compile(self, input_filename, output_filename):
+        process_data = BpmnFrontend.parse(input_filename)
+        PythonBackend.emit(process_data)
 
 if __name__ == "__main__":
     import sys
 
-    bpmn_filename = sys.argv[1]
-    python_filename = sys.argv[2]
+    input_filename = sys.argv[1]
+    output_filename = sys.argv[2]
 
-    BpmnFrontend.parse(bpmn_filename)
+    Compiler.compile(input_filename, output_filename)
 
-    print(f"ok: {bpmn_filename} -> {python_filename}")
+    print(f"ok: {input_filename} -> {output_filename}")
