@@ -15,9 +15,15 @@ def configs_named(config, name):
 def config_named(config, name):
     return configs_named(config, name)[0]
 
+def config_value_named(config, name):
+    return config_named(config, name)[2]
+
 def ext_named(config, ext_name):
     ext_elems = config_named(config, 'extensionElements')
     return configs_named(ext_elems[2], ext_name)[0]
+
+def ext_value_named(config, ext_name):
+    return ext_named(config, ext_name)[2]
 
 def fan_out(ks):
     def impl(data):
@@ -41,7 +47,7 @@ def end_event(id, config, k):
 
 def manual_task(id, config, k):
     import os
-    prompt = ext_named(config, 'instructionsForEndUser')[2]
+    prompt = ext_value_named(config, 'instructionsForEndUser')
     def impl(data):
         print(f"In manual_task: {id}")
         input(prompt)
@@ -68,7 +74,7 @@ def parallel_gateway(id, config, k):
     return pg_instances[id]
 
 def script_task(id, config, k):
-    script = config_named(config, 'script')[2]
+    script = config_value_named(config, 'script')
     def impl(data):
         print(f"In script_task: {id} - {script}")
         data[f"result_{id}"] = f"TODO_EVAL({script})"

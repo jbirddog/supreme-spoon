@@ -9,7 +9,21 @@
 # Example runtime
 #
 
-identity = lambda x: x
+def configs_named(config, name):
+    return list(filter(lambda c: c[0] == name, config))
+
+def config_named(config, name):
+    return configs_named(config, name)[0]
+
+def config_value_named(config, name):
+    return config_named(config, name)[2]
+
+def ext_named(config, ext_name):
+    ext_elems = config_named(config, 'extensionElements')
+    return configs_named(ext_elems[2], ext_name)[0]
+
+def ext_value_named(config, ext_name):
+    return ext_named(config, ext_name)[2]
 
 def fan_out(ks):
     def impl(data):
@@ -18,6 +32,8 @@ def fan_out(ks):
             if result is not None:
                 return result
     return impl
+
+identity = lambda x: x
 
 #
 # Example bpmn element implementations
@@ -29,10 +45,20 @@ def end_event(id, config, k):
         return k(data)
     return impl
 
+def manual_task(id, config, k):
+    import os
+    prompt = ext_value_named(config, 'instructionsForEndUser')
+    def impl(data):
+        print(f"In manual_task: {id}")
+        input(prompt)
+        print(config)
+        return k(data)
+    return impl
+
 pg_instances = {}
 def parallel_gateway(id, config, k):
     def make():
-        expected_in = len(list(filter(lambda c: c[0] == 'incoming', config)))
+        expected_in = len(configs_named(config, 'incoming'))
         conds = {"let_in": 0}
 
         def impl(data):
@@ -48,7 +74,7 @@ def parallel_gateway(id, config, k):
     return pg_instances[id]
 
 def script_task(id, config, k):
-    script = list(filter(lambda c: c[0] == 'script', config))[0][2]
+    script = config_value_named(config, 'script')
     def impl(data):
         print(f"In script_task: {id} - {script}")
         data[f"result_{id}"] = f"TODO_EVAL({script})"
@@ -62,13 +88,14 @@ def start_event(id, config, k):
     return impl
 
 
+
+#
+# Workflow expressed in CSP style. Would allow starting from/resuming at any point
+#
+workflow = start_event("StartEvent_1", [('outgoing', {}, 'EndEvent_0q4qzl9')], end_event("EndEvent_0q4qzl9", [('incoming', {}, 'StartEvent_1')], identity))
+
 if __name__ == "__main__":
     print("Running 'empty_workflow'...")
-
-    #
-    # Workflow expressed in CSP style. Would allow starting from/resuming at any point
-    #
-    workflow = start_event("StartEvent_1", [('outgoing', {}, 'EndEvent_0q4qzl9')], end_event("EndEvent_0q4qzl9", [('incoming', {}, 'StartEvent_1')], identity))
     
     result = workflow({})
     print(f"result: {result}")
