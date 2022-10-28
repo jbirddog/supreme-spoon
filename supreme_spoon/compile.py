@@ -6,13 +6,8 @@ class Compiler:
 
     @classmethod
     def _extract_sequence_flows(self, data):
-        def is_sequence_flow(datum):
-            return datum[0] == 'sequenceFlow'
-        def is_not_sequence_flow(datum):
-            return not is_sequence_flow(datum)
-
-        sequence_flows = filter(is_sequence_flow, data)
-        non_sequence_flows = filter(is_not_sequence_flow, data)
+        sequence_flows = filter(lambda d: d[0] == "sequenceFlow", data)
+        non_sequence_flows = filter(lambda d: d[0] != "sequenceFlow", data)
 
         return (sequence_flows, non_sequence_flows)
 
