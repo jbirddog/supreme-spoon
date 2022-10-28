@@ -36,12 +36,11 @@ def parallel_gateway(id, config, k):
         conds = {"let_in": 0}
 
         def impl(data):
-            print(f"In parallel_gateway: {id}")
             assert conds["let_in"] < expected_in
             conds["let_in"] += 1
-            print(f"  - expecting {expected_in}, seen {conds['let_in']}")
             if conds["let_in"] != expected_in:
                 return None
+            print(f"In parallel_gateway: {id}")
             return k(data)
         return impl
     if id not in pg_instances:

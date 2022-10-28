@@ -41,10 +41,10 @@ class Compiler:
     def compile(self, input_filename, output_filename):
         process_data = BpmnFrontend.parse(input_filename)
         flowed_process_data = list(map(self._resolve_sequence_flows, process_data))
-        prog = PythonCSPBackend.emit(flowed_process_data)
+        code = PythonCSPBackend.codegen(flowed_process_data)
 
         with open(output_filename, 'w') as f:
-            f.write(prog)
+            f.write(code)
 
 if __name__ == "__main__":
     import sys
