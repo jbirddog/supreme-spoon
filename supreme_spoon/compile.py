@@ -77,8 +77,10 @@ def parallel_gateway(id, config, k):
     return pg_instances[id]
 
 def script_task(id, config, k):
+    script = list(filter(lambda c: c[0] == 'script', config))[0][2]
     def impl(data):
-        print(f"In script_task: {id}")
+        print(f"In script_task: {id} - {script}")
+        data[f"result_{id}"] = f"TODO_EVAL({script})"
         return k(data)
     return impl
 
