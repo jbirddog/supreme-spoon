@@ -1,4 +1,4 @@
-from backend.python_csp import PythonCSPBackend
+from backend.python_cps import PythonCPSBackend
 from frontend.bpmn import BpmnFrontend
 from util import by_id
 
@@ -36,7 +36,7 @@ class Compiler:
     def compile(self, input_filename, output_filename):
         process_data = BpmnFrontend.parse(input_filename)
         flowed_process_data = list(map(self._resolve_sequence_flows, process_data))
-        code = PythonCSPBackend.codegen(flowed_process_data)
+        code = PythonCPSBackend.codegen(flowed_process_data)
 
         with open(output_filename, 'w') as f:
             f.write(code)
