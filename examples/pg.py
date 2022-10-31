@@ -54,7 +54,6 @@ def manual_task(id, config, k):
     def impl(data):
         print(f"In manual_task: {id}")
         input(prompt)
-        print(config)
         k(data)
     return impl
 
@@ -114,6 +113,6 @@ if __name__ == "__main__":
 
     workflow = steps[step_id]
 
-    print("Running 'Proccess_3qizfj5' from Event_056euq0...")
+    print(f"Running 'Proccess_3qizfj5' from '{step_id}'...")
     
     workflow({})

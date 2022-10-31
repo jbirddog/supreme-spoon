@@ -114,6 +114,6 @@ if __name__ == "__main__":
 
     workflow = steps[step_id]
 
-    print("Running 'Proccess_3qizfj5' from Event_056euq0...")
+    print(f"Running 'Proccess_3qizfj5' from '{step_id}'...")
     
     workflow({})

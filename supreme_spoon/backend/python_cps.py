@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     workflow = steps[step_id]
 
-    print("Running '{process_id}' from {step_id}...")
+    print(f"Running '{process_id}' from '{{step_id}}'...")
     
     workflow({{}})
 """
