@@ -29,16 +29,8 @@ class PythonCPSBackend:
                 ks = []
                 for outgoing_step in outgoing_steps:
                     _form_cps_steps(outgoing_step, steps, seen)
-                    ks.append(f"__k(\"{outgoing_step[1]['id']}\")")
-                ks_len = len(ks)
-                if ks_len == 0:
-                    k = "identity"
-                elif ks_len > 1:
-                    k = f"fan_out([{', '.join(ks)}])"
-                else:
-                    k = ks[0]
-                cps = f"{f}(\"{id}\", {config}, {k})"
-                steps.append(f"steps[\"{id}\"] = {cps}")
+                    ks.append(outgoing_step[1]["id"])
+                steps.append((f, id, config, ks))
                 seen.add(id)
                 return steps
             return _form_cps_steps(step, [], set())
@@ -60,6 +52,19 @@ class PythonCPSBackend:
 class Templates:
     @staticmethod
     def cps_steps(steps):
+        def _code_str(step):
+            (f, id, config, ks) = step
+            ks = list(map(lambda k_id: f"__k(\"{k_id}\")", ks))
+            ks_len = len(ks)
+            if ks_len == 0:
+                k = "identity"
+            elif ks_len > 1:
+                k = f"fan_out([{', '.join(ks)}])"
+            else:
+                k = ks[0]
+            cps = f"steps[\"{id}\"] = {f}(\"{id}\", {config}, {k})"
+            return cps
+        steps = map(_code_str, steps)
         step_decls = "\n".join(steps)
         return f"""
 steps = {{}}
