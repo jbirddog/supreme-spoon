@@ -35,6 +35,10 @@ def fan_out(ks):
 
 identity = lambda x: x
 
+steps = {}
+__k = lambda id: steps[id]
+
+
 #
 # Example bpmn element implementations
 #
