@@ -33,7 +33,9 @@ def fan_out(ks):
                 return result
     return impl
 
-identity = lambda x: x
+def end_k(data):
+    print("Complete!")
+    print(f"data: {data}")
 
 
 #
@@ -43,7 +45,7 @@ identity = lambda x: x
 def end_event(id, config, k):
     def impl(data):
         print(f"In end_event: {id}")
-        return k(data)
+        k(data)
     return impl
 
 def manual_task(id, config, k):
@@ -53,7 +55,7 @@ def manual_task(id, config, k):
         print(f"In manual_task: {id}")
         input(prompt)
         print(config)
-        return k(data)
+        k(data)
     return impl
 
 pg_instances = {}
@@ -65,10 +67,9 @@ def parallel_gateway(id, config, k):
         def impl(data):
             assert conds["let_in"] < expected_in
             conds["let_in"] += 1
-            if conds["let_in"] != expected_in:
-                return None
-            print(f"In parallel_gateway: {id}")
-            return k(data)
+            if conds["let_in"] == expected_in:
+                print(f"In parallel_gateway: {id}")
+                k(data)
         return impl
     if id not in pg_instances:
         pg_instances[id] = make()
@@ -79,20 +80,20 @@ def script_task(id, config, k):
     def impl(data):
         print(f"In script_task: {id} - {script}")
         data[f"result_{id}"] = f"TODO_EVAL({script})"
-        return k(data)
+        k(data)
     return impl
 
 def start_event(id, config, k):
     def impl(data):
         print(f"In start_event: {id}")
-        return k(data)
+        k(data)
     return impl
 
 
 steps = {}
 __k = lambda id: steps[id]
 
-steps["Event_1kj6hcj"] = end_event("Event_1kj6hcj", [('incoming', {}, 'Activity_0kapn49')], identity)
+steps["Event_1kj6hcj"] = end_event("Event_1kj6hcj", [('incoming', {}, 'Activity_0kapn49')], end_k)
 steps["Activity_0kapn49"] = script_task("Activity_0kapn49", [('incoming', {}, 'Gateway_0chrwmq'), ('outgoing', {}, 'Event_1kj6hcj'), ('script', {}, 'result = var1 + xyz_var')], __k("Event_1kj6hcj"))
 steps["Gateway_0chrwmq"] = parallel_gateway("Gateway_0chrwmq", [('incoming', {}, 'Activity_115woll'), ('incoming', {}, 'Activity_1g1cdox'), ('incoming', {}, 'Activity_1ewv0kb'), ('outgoing', {}, 'Activity_0kapn49')], __k("Activity_0kapn49"))
 steps["Activity_1ewv0kb"] = script_task("Activity_1ewv0kb", [('incoming', {}, 'Gateway_017jnp6'), ('outgoing', {}, 'Gateway_0chrwmq'), ('script', {}, 'var1=4')], __k("Gateway_0chrwmq"))
@@ -112,5 +113,4 @@ workflow = steps["Event_056euq0"]
 if __name__ == "__main__":
     print("Running 'Proccess_3qizfj5'...")
     
-    result = workflow({})
-    print(f"result: {result}")
+    workflow({})
