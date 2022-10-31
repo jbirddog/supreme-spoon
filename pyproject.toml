@@ -10,6 +10,7 @@ packages = [{include = "supreme_spoon"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 lxml = "^4.9.1"
+spiffworkflow = "^1.2.1"
 
 
 [build-system]
