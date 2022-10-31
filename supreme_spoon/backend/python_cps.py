@@ -18,22 +18,6 @@ class PythonCPSBackend:
         def outgoing(step):
             return list(filter(lambda n: n[0] == "outgoing", step[2]))
 
-        def form_cps(step):
-            f = func_map[step[0]]
-            id = step[1]["id"]
-            config = step[2]
-            outgoing_steps = map(lambda s: steps_by_id[s[2]], outgoing(step))
-            ks = list(map(form_cps, outgoing_steps))
-            ks_len = len(ks)
-            if ks_len == 0:
-                k = "identity"
-            elif ks_len > 1:
-                k = f"fan_out([{', '.join(ks)}])"
-            else:
-                k = ks[0]
-            cps = f"{f}(\"{id}\", {config}, {k})"
-            return cps
-
         def form_cps_steps(step):
             def _form_cps_steps(step, steps, seen):
                 id = step[1]["id"]
@@ -59,7 +43,6 @@ class PythonCPSBackend:
                 return steps
             return _form_cps_steps(step, [], set())
 
-        cps = form_cps(start_event)
         steps = form_cps_steps(start_event)
         process_id = kinda_ast[0][1]["id"]
         code = "\n".join([
