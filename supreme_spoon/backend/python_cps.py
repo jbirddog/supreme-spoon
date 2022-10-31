@@ -1,6 +1,6 @@
 from util import by_id
 
-class PythonCSPBackend:
+class PythonCPSBackend:
     @classmethod
     def codegen(self, kinda_ast):
         steps = kinda_ast[0][2]
@@ -18,27 +18,29 @@ class PythonCSPBackend:
         def outgoing(step):
             return list(filter(lambda n: n[0] == "outgoing", step[2]))
 
-        def form_csp(step):
-            f = func_map[step[0]]
-            id = step[1]["id"]
-            config = step[2]
-            outgoing_steps = map(lambda s: steps_by_id[s[2]], outgoing(step))
-            ks = list(map(form_csp, outgoing_steps))
-            ks_len = len(ks)
-            if ks_len == 0:
-                k = "identity"
-            elif ks_len > 1:
-                k = f"fan_out([{', '.join(ks)}])"
-            else:
-                k = ks[0]
-            csp = f"{f}(\"{id}\", {config}, {k})"
-            return csp
+        def form_cps_steps(step):
+            def _form_cps_steps(step, steps, seen):
+                id = step[1]["id"]
+                if id in seen:
+                    return
+                f = func_map[step[0]]
+                config = step[2]
+                outgoing_steps = map(lambda s: steps_by_id[s[2]], outgoing(step))
+                ks = []
+                for outgoing_step in outgoing_steps:
+                    _form_cps_steps(outgoing_step, steps, seen)
+                    ks.append(outgoing_step[1]["id"])
+                steps.append((f, id, config, ks))
+                seen.add(id)
+                return steps
+            return _form_cps_steps(step, [], set())
 
-        csp = form_csp(start_event)
+        steps = form_cps_steps(start_event)
         process_id = kinda_ast[0][1]["id"]
         code = "\n".join([
             Templates.preamble(), 
-            Templates.main(process_id, csp)
+            Templates.cps_steps(steps),
+            Templates.main(process_id, start_event[1]["id"]),
         ])
 
         return code
@@ -49,13 +51,35 @@ class PythonCSPBackend:
 
 class Templates:
     @staticmethod
-    def main(process_id, csp):
+    def cps_steps(steps):
+        def _code_str(step):
+            (f, id, config, ks) = step
+            ks = list(map(lambda k_id: f"__k(\"{k_id}\")", ks))
+            ks_len = len(ks)
+            if ks_len == 0:
+                k = "identity"
+            elif ks_len > 1:
+                k = f"fan_out([{', '.join(ks)}])"
+            else:
+                k = ks[0]
+            cps = f"steps[\"{id}\"] = {f}(\"{id}\", {config}, {k})"
+            return cps
+        steps = map(_code_str, steps)
+        step_decls = "\n".join(steps)
+        return f"""
+steps = {{}}
+__k = lambda id: steps[id]
+
+{step_decls}
+"""
+    @staticmethod
+    def main(process_id, step_id):
         return f"""
 
 #
-# Workflow expressed in CSP style. Would allow starting from/resuming at any point
+# Workflow expressed in CPS style. Would allow starting from/resuming at any point
 #
-workflow = {csp}
+workflow = steps["{step_id}"]
 
 if __name__ == "__main__":
     print("Running '{process_id}'...")
@@ -109,6 +133,7 @@ def fan_out(ks):
     return impl
 
 identity = lambda x: x
+
 
 #
 # Example bpmn element implementations

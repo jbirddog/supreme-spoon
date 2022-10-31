@@ -35,6 +35,7 @@ def fan_out(ks):
 
 identity = lambda x: x
 
+
 #
 # Example bpmn element implementations
 #
@@ -88,11 +89,25 @@ def start_event(id, config, k):
     return impl
 
 
+steps = {}
+__k = lambda id: steps[id]
+
+steps["Event_1kj6hcj"] = end_event("Event_1kj6hcj", [('incoming', {}, 'Activity_0kapn49')], identity)
+steps["Activity_0kapn49"] = script_task("Activity_0kapn49", [('incoming', {}, 'Gateway_0chrwmq'), ('outgoing', {}, 'Event_1kj6hcj'), ('script', {}, 'result = var1 + xyz_var')], __k("Event_1kj6hcj"))
+steps["Gateway_0chrwmq"] = parallel_gateway("Gateway_0chrwmq", [('incoming', {}, 'Activity_115woll'), ('incoming', {}, 'Activity_1g1cdox'), ('incoming', {}, 'Activity_1ewv0kb'), ('outgoing', {}, 'Activity_0kapn49')], __k("Activity_0kapn49"))
+steps["Activity_1ewv0kb"] = script_task("Activity_1ewv0kb", [('incoming', {}, 'Gateway_017jnp6'), ('outgoing', {}, 'Gateway_0chrwmq'), ('script', {}, 'var1=4')], __k("Gateway_0chrwmq"))
+steps["Activity_115woll"] = script_task("Activity_115woll", [('incoming', {}, 'Gateway_017jnp6'), ('outgoing', {}, 'Gateway_0chrwmq'), ('script', {}, 'var1=6')], __k("Gateway_0chrwmq"))
+steps["Activity_1g1cdox"] = script_task("Activity_1g1cdox", [('incoming', {}, 'Gateway_017jnp6'), ('outgoing', {}, 'Gateway_0chrwmq'), ('script', {}, 'var1=7')], __k("Gateway_0chrwmq"))
+steps["Gateway_017jnp6"] = parallel_gateway("Gateway_017jnp6", [('incoming', {}, 'Activity_0e2pojh'), ('outgoing', {}, 'Activity_1ewv0kb'), ('outgoing', {}, 'Activity_115woll'), ('outgoing', {}, 'Activity_1g1cdox')], fan_out([__k("Activity_1ewv0kb"), __k("Activity_115woll"), __k("Activity_1g1cdox")]))
+steps["Activity_0e2pojh"] = manual_task("Activity_0e2pojh", [('extensionElements', {}, [('instructionsForEndUser', {}, 'Press any key to continue the demo....')]), ('incoming', {}, 'Event_056euq0'), ('outgoing', {}, 'Gateway_017jnp6')], __k("Gateway_017jnp6"))
+steps["Event_056euq0"] = start_event("Event_056euq0", [('outgoing', {}, 'Activity_0e2pojh')], __k("Activity_0e2pojh"))
+
+
 
 #
-# Workflow expressed in CSP style. Would allow starting from/resuming at any point
+# Workflow expressed in CPS style. Would allow starting from/resuming at any point
 #
-workflow = start_event("Event_056euq0", [('outgoing', {}, 'Activity_0e2pojh')], manual_task("Activity_0e2pojh", [('extensionElements', {}, [('instructionsForEndUser', {}, 'Press any key to continue the demo....')]), ('incoming', {}, 'Event_056euq0'), ('outgoing', {}, 'Gateway_017jnp6')], parallel_gateway("Gateway_017jnp6", [('incoming', {}, 'Activity_0e2pojh'), ('outgoing', {}, 'Activity_1ewv0kb'), ('outgoing', {}, 'Activity_115woll'), ('outgoing', {}, 'Activity_1g1cdox')], fan_out([script_task("Activity_1ewv0kb", [('incoming', {}, 'Gateway_017jnp6'), ('outgoing', {}, 'Gateway_0chrwmq'), ('script', {}, 'var1=4')], parallel_gateway("Gateway_0chrwmq", [('incoming', {}, 'Activity_115woll'), ('incoming', {}, 'Activity_1g1cdox'), ('incoming', {}, 'Activity_1ewv0kb'), ('outgoing', {}, 'Activity_0kapn49')], script_task("Activity_0kapn49", [('incoming', {}, 'Gateway_0chrwmq'), ('outgoing', {}, 'Event_1kj6hcj'), ('script', {}, 'result = var1 + xyz_var')], end_event("Event_1kj6hcj", [('incoming', {}, 'Activity_0kapn49')], identity)))), script_task("Activity_115woll", [('incoming', {}, 'Gateway_017jnp6'), ('outgoing', {}, 'Gateway_0chrwmq'), ('script', {}, 'var1=6')], parallel_gateway("Gateway_0chrwmq", [('incoming', {}, 'Activity_115woll'), ('incoming', {}, 'Activity_1g1cdox'), ('incoming', {}, 'Activity_1ewv0kb'), ('outgoing', {}, 'Activity_0kapn49')], script_task("Activity_0kapn49", [('incoming', {}, 'Gateway_0chrwmq'), ('outgoing', {}, 'Event_1kj6hcj'), ('script', {}, 'result = var1 + xyz_var')], end_event("Event_1kj6hcj", [('incoming', {}, 'Activity_0kapn49')], identity)))), script_task("Activity_1g1cdox", [('incoming', {}, 'Gateway_017jnp6'), ('outgoing', {}, 'Gateway_0chrwmq'), ('script', {}, 'var1=7')], parallel_gateway("Gateway_0chrwmq", [('incoming', {}, 'Activity_115woll'), ('incoming', {}, 'Activity_1g1cdox'), ('incoming', {}, 'Activity_1ewv0kb'), ('outgoing', {}, 'Activity_0kapn49')], script_task("Activity_0kapn49", [('incoming', {}, 'Gateway_0chrwmq'), ('outgoing', {}, 'Event_1kj6hcj'), ('script', {}, 'result = var1 + xyz_var')], end_event("Event_1kj6hcj", [('incoming', {}, 'Activity_0kapn49')], identity))))]))))
+workflow = steps["Event_056euq0"]
 
 if __name__ == "__main__":
     print("Running 'Proccess_3qizfj5'...")
