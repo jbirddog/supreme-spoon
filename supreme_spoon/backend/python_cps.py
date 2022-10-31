@@ -4,6 +4,7 @@ class PythonCPSBackend:
     @classmethod
     def codegen(self, kinda_ast):
         steps = kinda_ast[0][2]
+        # TODO multiple start events, no start event...
         start_event = list(filter(lambda n: n[0] == "startEvent", steps))[0]
         steps_by_id = by_id(steps)
 
@@ -18,28 +19,32 @@ class PythonCPSBackend:
         def outgoing(step):
             return list(filter(lambda n: n[0] == "outgoing", step[2]))
 
+        steps_seen = set()
+
         def form_cps_steps(step):
-            def _form_cps_steps(step, steps, seen):
+            def _form_cps_steps(step, steps):
                 id = step[1]["id"]
-                if id in seen:
-                    return
+                if id in steps_seen:
+                    return []
                 f = func_map[step[0]]
                 config = step[2]
                 outgoing_steps = map(lambda s: steps_by_id[s[2]], outgoing(step))
                 ks = []
                 for outgoing_step in outgoing_steps:
-                    _form_cps_steps(outgoing_step, steps, seen)
+                    _form_cps_steps(outgoing_step, steps)
                     ks.append(outgoing_step[1]["id"])
                 steps.append((f, id, config, ks))
-                seen.add(id)
+                steps_seen.add(id)
                 return steps
-            return _form_cps_steps(step, [], set())
+            return _form_cps_steps(step, [])
 
-        steps = form_cps_steps(start_event)
+        cps_steps = []
+        for step in steps:
+            cps_steps += form_cps_steps(step)
         process_id = kinda_ast[0][1]["id"]
         code = "\n".join([
             Templates.preamble(), 
-            Templates.cps_steps(steps),
+            Templates.cps_steps(cps_steps),
             Templates.main(process_id, start_event[1]["id"]),
         ])
 
@@ -76,13 +81,17 @@ __k = lambda id: steps[id]
     def main(process_id, step_id):
         return f"""
 
-#
-# Workflow expressed in CPS style. Would allow starting from/resuming at any point
-#
-workflow = steps["{step_id}"]
-
 if __name__ == "__main__":
-    print("Running '{process_id}'...")
+    import sys
+
+    step_id = "{step_id}"
+
+    if len(sys.argv) > 1:
+        step_id = sys.argv[1]
+
+    workflow = steps[step_id]
+
+    print(f"Running '{process_id}' from '{{step_id}}'...")
     
     workflow({{}})
 """
@@ -152,7 +161,6 @@ def manual_task(id, config, k):
     def impl(data):
         print(f"In manual_task: {id}")
         input(prompt)
-        print(config)
         k(data)
     return impl
 

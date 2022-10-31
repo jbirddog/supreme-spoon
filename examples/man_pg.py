@@ -54,7 +54,6 @@ def manual_task(id, config, k):
     def impl(data):
         print(f"In manual_task: {id}")
         input(prompt)
-        print(config)
         k(data)
     return impl
 
@@ -105,12 +104,16 @@ steps["Event_056euq0"] = start_event("Event_056euq0", [('outgoing', {}, 'Activit
 
 
 
-#
-# Workflow expressed in CPS style. Would allow starting from/resuming at any point
-#
-workflow = steps["Event_056euq0"]
-
 if __name__ == "__main__":
-    print("Running 'Proccess_3qizfj5'...")
+    import sys
+
+    step_id = "Event_056euq0"
+
+    if len(sys.argv) > 1:
+        step_id = sys.argv[1]
+
+    workflow = steps[step_id]
+
+    print(f"Running 'Proccess_3qizfj5' from '{step_id}'...")
     
     workflow({})
