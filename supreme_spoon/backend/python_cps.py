@@ -54,18 +54,18 @@ class PythonCPSBackend:
                 else:
                     k = ks[0]
                 cps = f"{f}(\"{id}\", {config}, {k})"
-                steps.append((id, cps))
+                steps.append(f"steps[\"{id}\"] = {cps}")
                 seen.add(id)
                 return steps
             return _form_cps_steps(step, [], set())
 
         cps = form_cps(start_event)
         steps = form_cps_steps(start_event)
-        print(steps)
         process_id = kinda_ast[0][1]["id"]
         code = "\n".join([
             Templates.preamble(), 
-            Templates.main(process_id, cps)
+            Templates.cps_steps(steps),
+            Templates.main(process_id, start_event[1]["id"]),
         ])
 
         return code
@@ -76,13 +76,22 @@ class PythonCPSBackend:
 
 class Templates:
     @staticmethod
-    def main(process_id, cps):
+    def cps_steps(steps):
+        step_decls = "\n".join(steps)
+        return f"""
+steps = {{}}
+__k = lambda id: steps[id]
+
+{step_decls}
+"""
+    @staticmethod
+    def main(process_id, step_id):
         return f"""
 
 #
 # Workflow expressed in CPS style. Would allow starting from/resuming at any point
 #
-workflow = {cps}
+workflow = steps["{step_id}"]
 
 if __name__ == "__main__":
     print("Running '{process_id}'...")
@@ -136,9 +145,6 @@ def fan_out(ks):
     return impl
 
 identity = lambda x: x
-
-steps = {}
-__k = lambda id: steps[id]
 
 
 #

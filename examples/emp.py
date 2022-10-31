@@ -35,6 +35,7 @@ def fan_out(ks):
 
 identity = lambda x: x
 
+
 #
 # Example bpmn element implementations
 #
@@ -88,11 +89,18 @@ def start_event(id, config, k):
     return impl
 
 
+steps = {}
+__k = lambda id: steps[id]
+
+steps["EndEvent_0q4qzl9"] = end_event("EndEvent_0q4qzl9", [('incoming', {}, 'StartEvent_1')], identity)
+steps["StartEvent_1"] = start_event("StartEvent_1", [('outgoing', {}, 'EndEvent_0q4qzl9')], __k("EndEvent_0q4qzl9"))
+
+
 
 #
-# Workflow expressed in CSP style. Would allow starting from/resuming at any point
+# Workflow expressed in CPS style. Would allow starting from/resuming at any point
 #
-workflow = start_event("StartEvent_1", [('outgoing', {}, 'EndEvent_0q4qzl9')], end_event("EndEvent_0q4qzl9", [('incoming', {}, 'StartEvent_1')], identity))
+workflow = steps["StartEvent_1"]
 
 if __name__ == "__main__":
     print("Running 'empty_workflow'...")
