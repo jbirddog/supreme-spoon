@@ -57,7 +57,7 @@ class Templates:
             ks = list(map(lambda k_id: f"__k(\"{k_id}\")", ks))
             ks_len = len(ks)
             if ks_len == 0:
-                k = "identity"
+                k = "end_k"
             elif ks_len > 1:
                 k = f"fan_out([{', '.join(ks)}])"
             else:
@@ -84,8 +84,7 @@ workflow = steps["{step_id}"]
 if __name__ == "__main__":
     print("Running '{process_id}'...")
     
-    result = workflow({{}})
-    print(f"result: {{result}}")
+    workflow({{}})
 """
 
     def preamble():
@@ -132,7 +131,9 @@ def fan_out(ks):
                 return result
     return impl
 
-identity = lambda x: x
+def end_k(data):
+    print("Complete!")
+    print(f"data: {data}")
 
 
 #
@@ -142,7 +143,7 @@ identity = lambda x: x
 def end_event(id, config, k):
     def impl(data):
         print(f"In end_event: {id}")
-        return k(data)
+        k(data)
     return impl
 
 def manual_task(id, config, k):
@@ -152,7 +153,7 @@ def manual_task(id, config, k):
         print(f"In manual_task: {id}")
         input(prompt)
         print(config)
-        return k(data)
+        k(data)
     return impl
 
 pg_instances = {}
@@ -164,10 +165,9 @@ def parallel_gateway(id, config, k):
         def impl(data):
             assert conds["let_in"] < expected_in
             conds["let_in"] += 1
-            if conds["let_in"] != expected_in:
-                return None
-            print(f"In parallel_gateway: {id}")
-            return k(data)
+            if conds["let_in"] == expected_in:
+                print(f"In parallel_gateway: {id}")
+                k(data)
         return impl
     if id not in pg_instances:
         pg_instances[id] = make()
@@ -178,12 +178,12 @@ def script_task(id, config, k):
     def impl(data):
         print(f"In script_task: {id} - {script}")
         data[f"result_{id}"] = f"TODO_EVAL({script})"
-        return k(data)
+        k(data)
     return impl
 
 def start_event(id, config, k):
     def impl(data):
         print(f"In start_event: {id}")
-        return k(data)
+        k(data)
     return impl
 """
