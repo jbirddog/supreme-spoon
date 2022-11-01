@@ -1,6 +1,6 @@
-from backend.python_cps import PythonCPSBackend
-from frontend.bpmn import BpmnFrontend
-from util import by_id
+#from backend.python_cps import PythonCPSBackend
+#from frontend.bpmn import BpmnFrontend
+#from util import by_id
 
 from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.spiff.parser import SpiffBpmnParser
@@ -63,6 +63,62 @@ class Compiler:
         parser = SpiffBpmnParser()
         wf = self.parse_workflow(parser, process, [input_filename])
         wf.do_engine_steps()
+        print(wf.data)
+        return
+        serialized = _serializer.workflow_to_dict(wf)
+
+        with open(output_filename, "w") as f:
+            f.write(f"""
+from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
+from SpiffWorkflow.spiff.parser import SpiffBpmnParser
+from SpiffWorkflow.task import TaskState
+
+from SpiffWorkflow.dmn.serializer import BusinessRuleTaskConverter
+from SpiffWorkflow.spiff.serializer import BoundaryEventConverter
+from SpiffWorkflow.spiff.serializer import CallActivityTaskConverter
+from SpiffWorkflow.spiff.serializer import EndEventConverter
+from SpiffWorkflow.spiff.serializer import IntermediateCatchEventConverter
+from SpiffWorkflow.spiff.serializer import IntermediateThrowEventConverter
+from SpiffWorkflow.spiff.serializer import ManualTaskConverter
+from SpiffWorkflow.spiff.serializer import NoneTaskConverter
+from SpiffWorkflow.spiff.serializer import ReceiveTaskConverter
+from SpiffWorkflow.spiff.serializer import ScriptTaskConverter
+from SpiffWorkflow.spiff.serializer import SendTaskConverter
+from SpiffWorkflow.spiff.serializer import ServiceTaskConverter
+from SpiffWorkflow.spiff.serializer import StartEventConverter
+from SpiffWorkflow.spiff.serializer import SubWorkflowTaskConverter
+from SpiffWorkflow.spiff.serializer import TransactionSubprocessConverter
+from SpiffWorkflow.spiff.serializer import UserTaskConverter
+
+from SpiffWorkflow.bpmn.serializer import BpmnWorkflowSerializer
+
+SERIALIZER_VERSION = "1.0-supreme-spoon"
+wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
+    [
+        BoundaryEventConverter,
+        BusinessRuleTaskConverter,
+        CallActivityTaskConverter,
+        EndEventConverter,
+        IntermediateCatchEventConverter,
+        IntermediateThrowEventConverter,
+        ManualTaskConverter,
+        NoneTaskConverter,
+        ReceiveTaskConverter,
+        ScriptTaskConverter,
+        SendTaskConverter,
+        ServiceTaskConverter,
+        StartEventConverter,
+        SubWorkflowTaskConverter,
+        TransactionSubprocessConverter,
+        UserTaskConverter,
+    ]
+)
+serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
+wf = serializer.workflow_from_dict({serialized})
+wf.do_engine_steps()
+print(wf.data)
+""")
+        
 
 if __name__ == "__main__":
     import sys
@@ -77,12 +133,10 @@ if __name__ == "__main__":
     input_filename = "examples/emp.bpmn"
     output_filename = "examples/emp.spiff.py"
 
-    Compiler.compile(process, input_filename, output_filename)
+    #Compiler.compile(process, input_filename, output_filename)
 
-    
-    for i in range(1, 1):
-        #print('\n======\n')
-
+    # 1-1000 vanilla spiff parse/do_engine_steps = ~5s runtime on my machine
+    for i in range(1, 2):
         process = "Proccess_3qizfj5"
         input_filename = "examples/pg.bpmn"
         output_filename = "examples/pg.spiff.py"
