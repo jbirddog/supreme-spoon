@@ -2,49 +2,89 @@ from backend.python_cps import PythonCPSBackend
 from frontend.bpmn import BpmnFrontend
 from util import by_id
 
+from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
+from SpiffWorkflow.spiff.parser import SpiffBpmnParser
+from SpiffWorkflow.task import TaskState
+
+from SpiffWorkflow.dmn.serializer import BusinessRuleTaskConverter
+from SpiffWorkflow.spiff.serializer import BoundaryEventConverter
+from SpiffWorkflow.spiff.serializer import CallActivityTaskConverter
+from SpiffWorkflow.spiff.serializer import EndEventConverter
+from SpiffWorkflow.spiff.serializer import IntermediateCatchEventConverter
+from SpiffWorkflow.spiff.serializer import IntermediateThrowEventConverter
+from SpiffWorkflow.spiff.serializer import ManualTaskConverter
+from SpiffWorkflow.spiff.serializer import NoneTaskConverter
+from SpiffWorkflow.spiff.serializer import ReceiveTaskConverter
+from SpiffWorkflow.spiff.serializer import ScriptTaskConverter
+from SpiffWorkflow.spiff.serializer import SendTaskConverter
+from SpiffWorkflow.spiff.serializer import ServiceTaskConverter
+from SpiffWorkflow.spiff.serializer import StartEventConverter
+from SpiffWorkflow.spiff.serializer import SubWorkflowTaskConverter
+from SpiffWorkflow.spiff.serializer import TransactionSubprocessConverter
+from SpiffWorkflow.spiff.serializer import UserTaskConverter
+
+from SpiffWorkflow.bpmn.serializer import BpmnWorkflowSerializer
+
+SERIALIZER_VERSION = "1.0-supreme-spoon"
+wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
+    [
+        BoundaryEventConverter,
+        BusinessRuleTaskConverter,
+        CallActivityTaskConverter,
+        EndEventConverter,
+        IntermediateCatchEventConverter,
+        IntermediateThrowEventConverter,
+        ManualTaskConverter,
+        NoneTaskConverter,
+        ReceiveTaskConverter,
+        ScriptTaskConverter,
+        SendTaskConverter,
+        ServiceTaskConverter,
+        StartEventConverter,
+        SubWorkflowTaskConverter,
+        TransactionSubprocessConverter,
+        UserTaskConverter,
+    ]
+)
+_serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
+
+
 class Compiler:
 
     @classmethod
-    def _extract_sequence_flows(self, data):
-        sequence_flows = filter(lambda d: d[0] == "sequenceFlow", data)
-        non_sequence_flows = filter(lambda d: d[0] != "sequenceFlow", data)
-
-        return (sequence_flows, non_sequence_flows)
-
-    @classmethod
-    def _resolve(self, sequence_flows):
-        sequence_flows_by_id = by_id(sequence_flows)
-
-        map_to = lambda r: lambda v: (v[0], v[1], sequence_flows_by_id[v[2]][1][r])
-        resolvers = {"incoming": map_to("sourceRef"), "outgoing": map_to("targetRef")}
-
-        def resolve_elem_value(v):
-            return resolvers[v[0]](v) if v[0] in resolvers else v
-
-        def resolver(elem):
-            return (elem[0], elem[1], list(map(resolve_elem_value, elem[2])))
-
-        return resolver
+    def parse_workflow(self, parser, process, bpmn_files):
+        parser.add_bpmn_files(bpmn_files)
+        top_level = parser.get_spec(process)
+        subprocesses = parser.find_all_specs()
+        return BpmnWorkflow(top_level, subprocesses)
 
     @classmethod
-    def _resolve_sequence_flows(self, process_data):
-        sequence_flows, elems = self._extract_sequence_flows(process_data[2])
-        resolved_elems = map(self._resolve(sequence_flows), elems)
-        return (process_data[0], process_data[1], list(resolved_elems))
-
-    @classmethod
-    def compile(self, input_filename, output_filename):
-        process_data = BpmnFrontend.parse(input_filename)
-        flowed_process_data = list(map(self._resolve_sequence_flows, process_data))
-        code = PythonCPSBackend.codegen(flowed_process_data)
-
-        with open(output_filename, 'w') as f:
-            f.write(code)
+    def compile(self, process, input_filename, output_filename):
+        parser = SpiffBpmnParser()
+        wf = self.parse_workflow(parser, process, [input_filename])
+        wf.do_engine_steps()
 
 if __name__ == "__main__":
     import sys
 
-    input_filename = sys.argv[1]
-    output_filename = sys.argv[2]
+    #process = sys.argv[1]
+    ##input_filename = sys.argv[2]
+    #output_filename = sys.argv[3]
 
-    Compiler.compile(input_filename, output_filename)
+    print('\n------------------------\n')
+
+    process = "empty_workflow"
+    input_filename = "examples/emp.bpmn"
+    output_filename = "examples/emp.spiff.py"
+
+    Compiler.compile(process, input_filename, output_filename)
+
+    
+    for i in range(1, 1):
+        #print('\n======\n')
+
+        process = "Proccess_3qizfj5"
+        input_filename = "examples/pg.bpmn"
+        output_filename = "examples/pg.spiff.py"
+
+        Compiler.compile(process, input_filename, output_filename)
