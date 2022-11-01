@@ -256,12 +256,13 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
-name = "spiffworkflow"
+name = "SpiffWorkflow"
 version = "1.2.1"
 description = "A workflow framework and BPMN/DMN Processor"
 category = "main"
 optional = false
 python-versions = "*"
+develop = true
 
 [package.dependencies]
 celery = "*"
@@ -269,6 +270,10 @@ configparser = "*"
 dateparser = "*"
 lxml = "*"
 pytz = "*"
+
+[package.source]
+type = "directory"
+url = "../../sartography/spiff-arena/SpiffWorkflow"
 
 [[package]]
 name = "tzdata"
@@ -313,7 +318,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "605cb7c9a2006c06aeb720d35e154cabe3f3dd1372aa799c29df2a5886c33fdd"
+content-hash = "68a3bb771e717292497a00d0a9b1cf9ae43fe40346465eb8e56ebe91675ddd46"
 
 [metadata.files]
 amqp = [
@@ -528,10 +533,7 @@ six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
-spiffworkflow = [
-    {file = "SpiffWorkflow-1.2.1-py3-none-any.whl", hash = "sha256:57638646cb1aa3f557df6c5738fe078bff1f673297a074b877bfc6785456a4ea"},
-    {file = "SpiffWorkflow-1.2.1.tar.gz", hash = "sha256:d61a3f8ba2f4eb1c50d23754bbd6ca9716addb3468c23da9e423f001e4af22a2"},
-]
+SpiffWorkflow = []
 tzdata = [
     {file = "tzdata-2022.6-py2.py3-none-any.whl", hash = "sha256:04a680bdc5b15750c39c12a448885a51134a27ec9af83667663f0b3a1bf3f342"},
     {file = "tzdata-2022.6.tar.gz", hash = "sha256:91f11db4503385928c15598c98573e3af07e7229181bee5375bd30f1695ddcae"},
