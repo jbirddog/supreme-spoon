@@ -62,9 +62,9 @@ class Compiler:
     def compile(self, process, input_filename, output_filename):
         parser = SpiffBpmnParser()
         wf = self.parse_workflow(parser, process, [input_filename])
-        wf.do_engine_steps()
-        print(wf.data)
-        return
+        #wf.do_engine_steps()
+        #print(wf.data)
+        #return
         serialized = _serializer.workflow_to_dict(wf)
 
         with open(output_filename, "w") as f:
@@ -114,7 +114,9 @@ wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
     ]
 )
 serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
-wf = serializer.workflow_from_dict({serialized})
+serialized = {serialized}
+
+wf = serializer.workflow_from_dict(serialized)
 wf.do_engine_steps()
 print(wf.data)
 """)
@@ -133,7 +135,7 @@ if __name__ == "__main__":
     input_filename = "examples/emp.bpmn"
     output_filename = "examples/emp.spiff.py"
 
-    #Compiler.compile(process, input_filename, output_filename)
+    Compiler.compile(process, input_filename, output_filename)
 
     # 1-1000 vanilla spiff parse/do_engine_steps = ~5s runtime on my machine
     for i in range(1, 2):

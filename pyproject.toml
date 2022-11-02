@@ -10,7 +10,8 @@ packages = [{include = "supreme_spoon"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 lxml = "^4.9.1"
-spiffworkflow = {develop=true, path="/home/jon/projects/github/sartography/spiff-arena/SpiffWorkflow"} # "^1.2.1"
+spiffworkflow = {develop=true, path="../../sartography/spiff-arena/SpiffWorkflow"}
+#spiffworkflow = "^1.2.1"
 
 
 [build-system]
