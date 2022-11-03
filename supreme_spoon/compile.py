@@ -1,49 +1,14 @@
-#from backend.python_cps import PythonCPSBackend
-#from frontend.bpmn import BpmnFrontend
-#from util import by_id
-
+from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
 from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
+from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
 from SpiffWorkflow.task import TaskState
 
-from SpiffWorkflow.dmn.serializer.task_spec_converters import BusinessRuleTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import BoundaryEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import CallActivityTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import EndEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import IntermediateCatchEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import IntermediateThrowEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ManualTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import NoneTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ReceiveTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import SendTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ServiceTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import StartEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import SubWorkflowTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import TransactionSubprocessConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import UserTaskConverter
-
-from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
 
 SERIALIZER_VERSION = "1.0-supreme-spoon"
 wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
     [
-        BoundaryEventConverter,
-        BusinessRuleTaskConverter,
-        CallActivityTaskConverter,
-        EndEventConverter,
-        IntermediateCatchEventConverter,
-        IntermediateThrowEventConverter,
-        ManualTaskConverter,
-        NoneTaskConverter,
-        ReceiveTaskConverter,
         ScriptTaskConverter,
-        SendTaskConverter,
-        ServiceTaskConverter,
-        StartEventConverter,
-        SubWorkflowTaskConverter,
-        TransactionSubprocessConverter,
-        UserTaskConverter,
     ]
 )
 _serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
@@ -69,48 +34,17 @@ class Compiler:
 
         with open(output_filename, "w") as f:
             f.write(f"""
+from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
 from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
+from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
 from SpiffWorkflow.task import TaskState
 
-from SpiffWorkflow.dmn.serializer.task_spec_converters import BusinessRuleTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import BoundaryEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import CallActivityTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import EndEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import IntermediateCatchEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import IntermediateThrowEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ManualTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import NoneTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ReceiveTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import SendTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ServiceTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import StartEventConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import SubWorkflowTaskConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import TransactionSubprocessConverter
-from SpiffWorkflow.spiff.serializer.task_spec_converters import UserTaskConverter
-
-from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
 
 SERIALIZER_VERSION = "1.0-supreme-spoon"
 wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
     [
-        BoundaryEventConverter,
-        BusinessRuleTaskConverter,
-        CallActivityTaskConverter,
-        EndEventConverter,
-        IntermediateCatchEventConverter,
-        IntermediateThrowEventConverter,
-        ManualTaskConverter,
-        NoneTaskConverter,
-        ReceiveTaskConverter,
         ScriptTaskConverter,
-        SendTaskConverter,
-        ServiceTaskConverter,
-        StartEventConverter,
-        SubWorkflowTaskConverter,
-        TransactionSubprocessConverter,
-        UserTaskConverter,
     ]
 )
 serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
@@ -134,6 +68,10 @@ if __name__ == "__main__":
     process = "empty_workflow"
     input_filename = "examples/emp.bpmn"
     output_filename = "examples/emp.spiff.py"
+
+    process = "Proccess_v60ufvy"
+    input_filename = "supreme_spoon/bpmn/spoon.bpmn"
+    output_filename = "examples/spoon.py"
 
     Compiler.compile(process, input_filename, output_filename)
 
