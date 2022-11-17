@@ -1,6 +1,7 @@
 from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
 from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
+from SpiffWorkflow.spiff.serializer.task_spec_converters import ManualTaskConverter
 from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
 from SpiffWorkflow.task import TaskState
 
@@ -8,6 +9,7 @@ from SpiffWorkflow.task import TaskState
 SERIALIZER_VERSION = "1.0-supreme-spoon"
 wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
     [
+        ManualTaskConverter,
         ScriptTaskConverter,
     ]
 )
@@ -37,6 +39,7 @@ class Compiler:
 from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
 from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
+from SpiffWorkflow.spiff.serializer.task_spec_converters import ManualTaskConverter
 from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
 from SpiffWorkflow.task import TaskState
 
@@ -44,6 +47,7 @@ from SpiffWorkflow.task import TaskState
 SERIALIZER_VERSION = "1.0-supreme-spoon"
 wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
     [
+        ManualTaskConverter,
         ScriptTaskConverter,
     ]
 )
@@ -72,6 +76,10 @@ if __name__ == "__main__":
     process = "Proccess_v60ufvy"
     input_filename = "supreme_spoon/bpmn/spoon.bpmn"
     output_filename = "examples/spoon.py"
+
+    process = "Proccess_3qizfj5"
+    input_filename = "examples/man_pg.bpmn"
+    output_filename = "examples/man_pg.spiff.py"
 
     Compiler.compile(process, input_filename, output_filename)
 
