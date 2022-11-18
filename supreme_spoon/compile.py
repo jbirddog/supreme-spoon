@@ -78,23 +78,23 @@ if __name__ == "__main__":
     print('\n------------------------\n')
 
     process = "empty_workflow"
-    input_filename = "examples/emp.bpmn"
-    output_filename = "examples/emp.spiff.py"
+    input_filename = "old_examples/emp.bpmn"
+    output_filename = "old_examples/emp.spiff.py"
 
     process = "Proccess_v60ufvy"
     input_filename = "supreme_spoon/bpmn/spoon.bpmn"
-    output_filename = "examples/spoon.py"
+    output_filename = "old_examples/spoon.py"
 
     process = "Proccess_3qizfj5"
-    input_filename = "examples/man_pg.bpmn"
-    output_filename = "examples/man_pg.spiff.py"
+    input_filename = "old_examples/man_pg.bpmn"
+    output_filename = "old_examples/man_pg.spiff.py"
 
     Compiler.compile(process, input_filename, output_filename)
 
     # 1-1000 vanilla spiff parse/do_engine_steps = ~5s runtime on my machine
     for i in range(1, 2):
         process = "Proccess_3qizfj5"
-        input_filename = "examples/pg.bpmn"
-        output_filename = "examples/pg.spiff.py"
+        input_filename = "old_examples/pg.bpmn"
+        output_filename = "old_examples/pg.spiff.py"
 
         Compiler.compile(process, input_filename, output_filename)
