@@ -19,19 +19,19 @@ _serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSI
 class Compiler:
 
     @classmethod
-    def parse_workflow(self, parser, process, bpmn_files):
+    def parse_workflow(cls, parser, process, bpmn_files):
         parser.add_bpmn_files(bpmn_files)
         top_level = parser.get_spec(process)
         subprocesses = parser.find_all_specs()
         return BpmnWorkflow(top_level, subprocesses)
 
     @classmethod
-    def compile(self, process, input_filename, output_filename):
+    def compile(cls, process, input_filename, output_filename):
         parser = SpiffBpmnParser()
-        wf = self.parse_workflow(parser, process, [input_filename])
-        #wf.do_engine_steps()
-        #print(wf.data)
-        #return
+        wf = cls.parse_workflow(parser, process, [input_filename])
+        tasks = wf.get_tasks()
+        for task in tasks:
+            print(task.task_spec.spec_type)
         serialized = _serializer.workflow_to_dict(wf)
 
         with open(output_filename, "w") as f:
@@ -56,6 +56,14 @@ serialized = {serialized}
 
 wf = serializer.workflow_from_dict(serialized)
 wf.do_engine_steps()
+
+while not wf.is_completed():
+    ready_tasks = wf.get_ready_user_tasks()
+    for task in ready_tasks:
+        task.complete()
+    wf.refresh_waiting_tasks()
+    wf.do_engine_steps()
+
 print(wf.data)
 """)
         
