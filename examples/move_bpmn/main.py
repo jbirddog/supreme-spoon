@@ -4,6 +4,7 @@ if __name__ == "__main__":
     workflow = MoveBPMNFiles()
     result = workflow.run()
 
+    print(result)
     moved_files = result["move_targets"]
 
     if len(moved_files) == 0:
@@ -12,4 +13,3 @@ if __name__ == "__main__":
     for moved_file in moved_files:
         print(f"Moved: {moved_file[0]} -> {moved_file[1]}")
 
-    print(result)

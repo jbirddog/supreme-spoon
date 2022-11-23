@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_96f6665" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.0.0-dev">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:spiffworkflow="http://spiffworkflow.org/bpmn/schema/1.0/core" id="Definitions_96f6665" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.0.0-dev">
   <bpmn:process id="Process_qpfr71f" name="MoveBPMNFiles" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>Flow_0my7q5j</bpmn:outgoing>
@@ -30,10 +30,9 @@ def is_bpmn_file(filename):
 
 downloaded_bpmn_files = sorted(filter(is_bpmn_file, os.listdir(download_dir)))</bpmn:script>
     </bpmn:scriptTask>
-    <bpmn:sequenceFlow id="Flow_0mo87mc" sourceRef="Activity_1vwbjch" targetRef="Activity_1onldol" />
     <bpmn:scriptTask id="Activity_1vwbjch" name="build move source and destinations">
       <bpmn:incoming>Flow_123oz5c</bpmn:incoming>
-      <bpmn:outgoing>Flow_0mo87mc</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1hr87gn</bpmn:outgoing>
       <bpmn:script># TODO: look into a dmn table for this
 bpmn_file_destinations = {
     "move_bpmn.bpmn": "examples/move_bpmn/move_bpmn.bpmn",
@@ -46,11 +45,14 @@ for bpmn_file in downloaded_bpmn_files:
     if bpmn_file in bpmn_file_destinations:
         move_targets.append((bpmn_file, bpmn_file_destinations[bpmn_file]))
     else:
-        unknown_bpmn_files.append(bpmn_file)</bpmn:script>
+        unknown_bpmn_files.append(bpmn_file)
+
+saw_unknown_bpmn_files = len(unknown_bpmn_files) &gt; 0</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:sequenceFlow id="Flow_05elyac" sourceRef="Activity_1onldol" targetRef="Event_0f7r3q9" />
     <bpmn:scriptTask id="Activity_1onldol" name="move downloaded bpmn files">
-      <bpmn:incoming>Flow_0mo87mc</bpmn:incoming>
+      <bpmn:incoming>Flow_1yte886</bpmn:incoming>
+      <bpmn:incoming>Flow_1xsxefe</bpmn:incoming>
       <bpmn:outgoing>Flow_05elyac</bpmn:outgoing>
       <bpmn:script>import os
 
@@ -59,6 +61,35 @@ for move_target in move_targets:
     destination = os.path.join(project_dir, move_target[1])
     os.replace(source, destination)</bpmn:script>
     </bpmn:scriptTask>
+    <bpmn:manualTask id="Activity_1f00v7w" name="confirm unknown bpmn file deletion">
+      <bpmn:extensionElements>
+        <spiffworkflow:instructionsForEndUser>Saw unknown bpmn files. Confirm deletion or quit the process to abort.</spiffworkflow:instructionsForEndUser>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_16aapr5</bpmn:incoming>
+      <bpmn:outgoing>Flow_0nopkgo</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:sequenceFlow id="Flow_0nopkgo" sourceRef="Activity_1f00v7w" targetRef="Activity_199a27l" />
+    <bpmn:scriptTask id="Activity_199a27l" name="delete unknow bpmn files">
+      <bpmn:incoming>Flow_0nopkgo</bpmn:incoming>
+      <bpmn:outgoing>Flow_1xsxefe</bpmn:outgoing>
+      <bpmn:script>import os
+
+for unknown_bpmn_file in unknown_bpmn_files:
+    os.remove(os.path.join(download_dir, unknown_bpmn_file))</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_1hr87gn" sourceRef="Activity_1vwbjch" targetRef="Gateway_1fnsa3q" />
+    <bpmn:exclusiveGateway id="Gateway_1fnsa3q">
+      <bpmn:incoming>Flow_1hr87gn</bpmn:incoming>
+      <bpmn:outgoing>Flow_1yte886</bpmn:outgoing>
+      <bpmn:outgoing>Flow_16aapr5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1yte886" sourceRef="Gateway_1fnsa3q" targetRef="Activity_1onldol">
+      <bpmn:conditionExpression>saw_unknown_bpmn_files == False</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_16aapr5" sourceRef="Gateway_1fnsa3q" targetRef="Activity_1f00v7w">
+      <bpmn:conditionExpression>saw_unknown_bpmn_files == True</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1xsxefe" sourceRef="Activity_199a27l" targetRef="Activity_1onldol" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_qpfr71f">
@@ -84,6 +115,17 @@ for move_target in move_targets:
         <dc:Bounds x="174" y="310" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ycnm8b_di" bpmnElement="Activity_1f00v7w">
+        <dc:Bounds x="300" y="410" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1fnsa3q_di" bpmnElement="Gateway_1fnsa3q" isMarkerVisible="true">
+        <dc:Bounds x="199" y="425" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ghe7x4_di" bpmnElement="Activity_199a27l">
+        <dc:Bounds x="440" y="410" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0my7q5j_di" bpmnElement="Flow_0my7q5j">
         <di:waypoint x="178" y="50" />
         <di:waypoint x="224" y="50" />
@@ -97,13 +139,30 @@ for move_target in move_targets:
         <di:waypoint x="224" y="280" />
         <di:waypoint x="224" y="310" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0mo87mc_di" bpmnElement="Flow_0mo87mc">
-        <di:waypoint x="224" y="390" />
-        <di:waypoint x="224" y="540" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_05elyac_di" bpmnElement="Flow_05elyac">
         <di:waypoint x="224" y="620" />
         <di:waypoint x="224" y="652" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nopkgo_di" bpmnElement="Flow_0nopkgo">
+        <di:waypoint x="400" y="450" />
+        <di:waypoint x="440" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hr87gn_di" bpmnElement="Flow_1hr87gn">
+        <di:waypoint x="224" y="390" />
+        <di:waypoint x="224" y="425" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1yte886_di" bpmnElement="Flow_1yte886">
+        <di:waypoint x="224" y="475" />
+        <di:waypoint x="224" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16aapr5_di" bpmnElement="Flow_16aapr5">
+        <di:waypoint x="249" y="450" />
+        <di:waypoint x="300" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xsxefe_di" bpmnElement="Flow_1xsxefe">
+        <di:waypoint x="490" y="490" />
+        <di:waypoint x="490" y="580" />
+        <di:waypoint x="274" y="580" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
