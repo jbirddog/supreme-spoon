@@ -9,7 +9,7 @@ from emit import Emitter
 class Dependencies:
 
     SPEC_CONVERTERS = {
-        "ManualTask": (ManualTaskConverter, "ManualTaskConverter"),
+        "Manual Task": (ManualTaskConverter, "ManualTaskConverter"),
         "Script Task": (ScriptTaskConverter, "ScriptTaskConverter"),
     }
 
