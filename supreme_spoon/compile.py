@@ -3,7 +3,6 @@ from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
 from SpiffWorkflow.spiff.serializer.task_spec_converters import ManualTaskConverter
 from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
-from SpiffWorkflow.task import TaskState
 
 
 SERIALIZER_VERSION = "1.0-supreme-spoon"
@@ -37,14 +36,11 @@ class Compiler:
         with open(output_filename, "w") as f:
             f.write(f"""
 from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
-from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
-from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
 from SpiffWorkflow.spiff.serializer.task_spec_converters import ManualTaskConverter
 from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
-from SpiffWorkflow.task import TaskState
 
 
-SERIALIZER_VERSION = "1.0-supreme-spoon"
+SERIALIZER_VERSION = "{SERIALIZER_VERSION}"
 wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
     [
         ManualTaskConverter,
@@ -71,30 +67,13 @@ print(wf.data)
 if __name__ == "__main__":
     import sys
 
+    # TODO: argparse
     #process = sys.argv[1]
-    ##input_filename = sys.argv[2]
+    #input_filename = sys.argv[2]
     #output_filename = sys.argv[3]
 
-    print('\n------------------------\n')
-
-    process = "empty_workflow"
-    input_filename = "old_examples/emp.bpmn"
-    output_filename = "old_examples/emp.spiff.py"
-
-    process = "Proccess_v60ufvy"
-    input_filename = "supreme_spoon/bpmn/spoon.bpmn"
-    output_filename = "old_examples/spoon.py"
-
-    process = "Proccess_3qizfj5"
-    input_filename = "old_examples/man_pg.bpmn"
-    output_filename = "old_examples/man_pg.spiff.py"
+    process = "Process_qpfr71f"
+    input_filename = "examples/copybpmn/copybpmn.bpmn"
+    output_filename = "examples/copybpmn/copybpmn.py"
 
     Compiler.compile(process, input_filename, output_filename)
-
-    # 1-1000 vanilla spiff parse/do_engine_steps = ~5s runtime on my machine
-    for i in range(1, 2):
-        process = "Proccess_3qizfj5"
-        input_filename = "old_examples/pg.bpmn"
-        output_filename = "old_examples/pg.spiff.py"
-
-        Compiler.compile(process, input_filename, output_filename)
