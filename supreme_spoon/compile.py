@@ -43,16 +43,16 @@ class Compiler:
 
     @classmethod
     def get_serializer(cls):
-        wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
+        spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
             Dependencies.compile_time_spec_converters()
         )
-        return BpmnWorkflowSerializer(wf_spec_converter, version=cls.SERIALIZER_VERSION)
+        return BpmnWorkflowSerializer(spec_converter, version=cls.SERIALIZER_VERSION)
 
     @classmethod
     def compile(cls, process, input_filename, output_filename):
-        wf = cls.parse_workflow(process, [input_filename])
-        tasks = wf.get_tasks()
-        serialized = cls.get_serializer().workflow_to_dict(wf)
+        workflow = cls.parse_workflow(process, [input_filename])
+        tasks = workflow.get_tasks()
+        serialized = cls.get_serializer().workflow_to_dict(workflow)
         spec_converters = Dependencies.runtime_spec_converters(tasks)
 
         Emitter.emit(process, serialized, cls.SERIALIZER_VERSION, spec_converters, output_filename)
