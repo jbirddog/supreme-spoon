@@ -15,7 +15,7 @@
       <bpmn:script>import os
 from pathlib import Path
 
-home_dir = Path.home()
+home_dir = str(Path.home())
 download_dir = os.path.join(home_dir, "Downloads")
 project_dir = os.path.join(home_dir, "projects", "github", "jbirddog", "supreme-spoon")</bpmn:script>
     </bpmn:scriptTask>
@@ -34,22 +34,19 @@ downloaded_bpmn_files = sorted(filter(is_bpmn_file, os.listdir(download_dir)))</
     <bpmn:scriptTask id="Activity_1vwbjch" name="build move source and destinations">
       <bpmn:incoming>Flow_123oz5c</bpmn:incoming>
       <bpmn:outgoing>Flow_0mo87mc</bpmn:outgoing>
-      <bpmn:script>import re
-
+      <bpmn:script># TODO: look into a dmn table for this
 bpmn_file_destinations = {
     "move_bpmn.bpmn": "examples/move_bpmn/move_bpmn.bpmn",
 }
 
-def move_target(bpmn_file):
-    # the sort order by default isn't right, results in (n) files 
-    # moved before, which means older changes win. Need to address 
-    # this scenario
-    #normalized_name = re.sub(" \(\d+\)", "", bpmn_file)
-    normalized_name = bpmn_file
-    if normalized_name in bpmn_file_destinations:
-        return (bpmn_file, bpmn_file_destinations[normalized_name])
+unknown_bpmn_files = []
+move_targets = []
 
-move_targets = list(filter(None, map(move_target, downloaded_bpmn_files)))</bpmn:script>
+for bpmn_file in downloaded_bpmn_files:
+    if bpmn_file in bpmn_file_destinations:
+        move_targets.append((bpmn_file, bpmn_file_destinations[bpmn_file]))
+    else:
+        unknown_bpmn_files.append(bpmn_file)</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:sequenceFlow id="Flow_05elyac" sourceRef="Activity_1onldol" targetRef="Event_0f7r3q9" />
     <bpmn:scriptTask id="Activity_1onldol" name="move downloaded bpmn files">
@@ -76,15 +73,16 @@ for move_target in move_targets:
         <dc:Bounds x="174" y="200" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0mrspvi_di" bpmnElement="Activity_1vwbjch">
-        <dc:Bounds x="174" y="310" width="100" height="80" />
+      <bpmndi:BPMNShape id="Event_0f7r3q9_di" bpmnElement="Event_0f7r3q9">
+        <dc:Bounds x="206" y="652" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_10d3h5w_di" bpmnElement="Activity_1onldol">
-        <dc:Bounds x="174" y="420" width="100" height="80" />
+        <dc:Bounds x="174" y="540" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0f7r3q9_di" bpmnElement="Event_0f7r3q9">
-        <dc:Bounds x="206" y="542" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_0mrspvi_di" bpmnElement="Activity_1vwbjch">
+        <dc:Bounds x="174" y="310" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0my7q5j_di" bpmnElement="Flow_0my7q5j">
         <di:waypoint x="178" y="50" />
@@ -101,11 +99,11 @@ for move_target in move_targets:
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0mo87mc_di" bpmnElement="Flow_0mo87mc">
         <di:waypoint x="224" y="390" />
-        <di:waypoint x="224" y="420" />
+        <di:waypoint x="224" y="540" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_05elyac_di" bpmnElement="Flow_05elyac">
-        <di:waypoint x="224" y="500" />
-        <di:waypoint x="224" y="542" />
+        <di:waypoint x="224" y="620" />
+        <di:waypoint x="224" y="652" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
