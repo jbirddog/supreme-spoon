@@ -1,4 +1,4 @@
-from copybpmn import CopyBPMNFiles
+from move_bpmn import MoveBPMNFiles
 
 def copy_bpmn_files():
     print("copy bpmn files")
@@ -8,7 +8,7 @@ if __name__ == "__main__":
         "copy_bpmn_files": copy_bpmn_files,
     }
 
-    workflow = CopyBPMNFiles(
+    workflow = MoveBPMNFiles(
         scripting_additions=scripting_additions,
     )
     
