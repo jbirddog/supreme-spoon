@@ -6,9 +6,9 @@
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_0my7q5j" sourceRef="StartEvent_1" targetRef="Activity_0jvfn7c" />
     <bpmn:endEvent id="Event_0f7r3q9">
-      <bpmn:incoming>Flow_0vsyo0z</bpmn:incoming>
+      <bpmn:incoming>Flow_05elyac</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0vsyo0z" sourceRef="Activity_0jvfn7c" targetRef="Event_0f7r3q9" />
+    <bpmn:sequenceFlow id="Flow_0vsyo0z" sourceRef="Activity_0jvfn7c" targetRef="Activity_1v124g4" />
     <bpmn:scriptTask id="Activity_0jvfn7c" name="build directory paths">
       <bpmn:incoming>Flow_0my7q5j</bpmn:incoming>
       <bpmn:outgoing>Flow_0vsyo0z</bpmn:outgoing>
@@ -19,26 +19,86 @@ home_dir = Path.home()
 download_dir = os.path.join(home_dir, "Downloads")
 project_dir = os.path.join(home_dir, "projects", "github", "jbirddog", "supreme-spoon")</bpmn:script>
     </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_123oz5c" sourceRef="Activity_1v124g4" targetRef="Activity_1vwbjch" />
+    <bpmn:scriptTask id="Activity_1v124g4" name="find downloaded bpmn files">
+      <bpmn:incoming>Flow_0vsyo0z</bpmn:incoming>
+      <bpmn:outgoing>Flow_123oz5c</bpmn:outgoing>
+      <bpmn:script>import os
+
+def is_bpmn_file(filename):
+    return filename.endswith(".bpmn")
+
+downloaded_bpmn_files = sorted(filter(is_bpmn_file, os.listdir(download_dir)))</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_0mo87mc" sourceRef="Activity_1vwbjch" targetRef="Activity_1onldol" />
+    <bpmn:scriptTask id="Activity_1vwbjch" name="build move source and destinations">
+      <bpmn:incoming>Flow_123oz5c</bpmn:incoming>
+      <bpmn:outgoing>Flow_0mo87mc</bpmn:outgoing>
+      <bpmn:script>bpmn_file_destinations = {
+    "move_bpmn.bpmn": "examples/move_bpmn/move_bpmn.bpmn",
+}
+
+def move_target(bpmn_file):
+    if bpmn_file in bpmn_file_destinations:
+        return (bpmn_file, bpmn_file_destinations[bpmn_file])
+
+move_targets = list(filter(None, map(move_target, downloaded_bpmn_files)))</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_05elyac" sourceRef="Activity_1onldol" targetRef="Event_0f7r3q9" />
+    <bpmn:scriptTask id="Activity_1onldol" name="move downloaded bpmn files">
+      <bpmn:incoming>Flow_0mo87mc</bpmn:incoming>
+      <bpmn:outgoing>Flow_05elyac</bpmn:outgoing>
+      <bpmn:script>import os
+
+for move_target in move_targets:
+    source = os.path.join(download_dir, move_target[0])
+    destination = os.path.join(project_dir, move_target[1])
+    os.replace(source, destination)</bpmn:script>
+    </bpmn:scriptTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_qpfr71f">
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds x="179" y="159" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0f7r3q9_di" bpmnElement="Event_0f7r3q9">
-        <dc:Bounds x="432" y="159" width="36" height="36" />
+        <dc:Bounds x="142" y="32" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0nlzz3t_di" bpmnElement="Activity_0jvfn7c">
-        <dc:Bounds x="270" y="137" width="100" height="80" />
+        <dc:Bounds x="174" y="90" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1nlekdt_di" bpmnElement="Activity_1v124g4">
+        <dc:Bounds x="174" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0mrspvi_di" bpmnElement="Activity_1vwbjch">
+        <dc:Bounds x="174" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10d3h5w_di" bpmnElement="Activity_1onldol">
+        <dc:Bounds x="174" y="420" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0f7r3q9_di" bpmnElement="Event_0f7r3q9">
+        <dc:Bounds x="206" y="542" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0my7q5j_di" bpmnElement="Flow_0my7q5j">
-        <di:waypoint x="215" y="177" />
-        <di:waypoint x="270" y="177" />
+        <di:waypoint x="178" y="50" />
+        <di:waypoint x="224" y="50" />
+        <di:waypoint x="224" y="90" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0vsyo0z_di" bpmnElement="Flow_0vsyo0z">
-        <di:waypoint x="370" y="177" />
-        <di:waypoint x="432" y="177" />
+        <di:waypoint x="224" y="170" />
+        <di:waypoint x="224" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_123oz5c_di" bpmnElement="Flow_123oz5c">
+        <di:waypoint x="224" y="280" />
+        <di:waypoint x="224" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mo87mc_di" bpmnElement="Flow_0mo87mc">
+        <di:waypoint x="224" y="390" />
+        <di:waypoint x="224" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05elyac_di" bpmnElement="Flow_05elyac">
+        <di:waypoint x="224" y="500" />
+        <di:waypoint x="224" y="542" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
