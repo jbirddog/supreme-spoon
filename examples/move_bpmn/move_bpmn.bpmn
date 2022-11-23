@@ -34,13 +34,20 @@ downloaded_bpmn_files = sorted(filter(is_bpmn_file, os.listdir(download_dir)))</
     <bpmn:scriptTask id="Activity_1vwbjch" name="build move source and destinations">
       <bpmn:incoming>Flow_123oz5c</bpmn:incoming>
       <bpmn:outgoing>Flow_0mo87mc</bpmn:outgoing>
-      <bpmn:script>bpmn_file_destinations = {
+      <bpmn:script>import re
+
+bpmn_file_destinations = {
     "move_bpmn.bpmn": "examples/move_bpmn/move_bpmn.bpmn",
 }
 
 def move_target(bpmn_file):
-    if bpmn_file in bpmn_file_destinations:
-        return (bpmn_file, bpmn_file_destinations[bpmn_file])
+    # the sort order by default isn't right, results in (n) files 
+    # moved before, which means older changes win. Need to address 
+    # this scenario
+    #normalized_name = re.sub(" \(\d+\)", "", bpmn_file)
+    normalized_name = bpmn_file
+    if normalized_name in bpmn_file_destinations:
+        return (bpmn_file, bpmn_file_destinations[normalized_name])
 
 move_targets = list(filter(None, map(move_target, downloaded_bpmn_files)))</bpmn:script>
     </bpmn:scriptTask>
