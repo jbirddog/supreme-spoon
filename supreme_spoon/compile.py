@@ -52,12 +52,10 @@ class Compiler:
     def compile(cls, process, input_filename, output_filename):
         wf = cls.parse_workflow(process, [input_filename])
         tasks = wf.get_tasks()
-        for task in tasks:
-            print(task.task_spec.spec_type)
         serialized = cls.get_serializer().workflow_to_dict(wf)
         spec_converters = Dependencies.runtime_spec_converters(tasks)
 
-        Emitter.emit(serialized, cls.SERIALIZER_VERSION, spec_converters, output_filename)
+        Emitter.emit(process, serialized, cls.SERIALIZER_VERSION, spec_converters, output_filename)
 
 if __name__ == "__main__":
     import sys
@@ -67,7 +65,7 @@ if __name__ == "__main__":
     #input_filename = sys.argv[2]
     #output_filename = sys.argv[3]
 
-    process = "Process_qpfr71f"
+    process = "CopyBPMNFiles"
     input_filename = "examples/copybpmn/copybpmn.bpmn"
     output_filename = "examples/copybpmn/copybpmn.py"
 
