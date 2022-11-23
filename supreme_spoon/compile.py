@@ -6,14 +6,32 @@ from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConver
 
 from emit import Emitter
 
+class Dependencies:
+
+    SPEC_CONVERTERS = {
+        "ManualTask": (ManualTaskConverter, "ManualTaskConverter"),
+        "Script Task": (ScriptTaskConverter, "ScriptTaskConverter"),
+    }
+
+    @classmethod
+    def compile_time_spec_converters(cls):
+        def sc_cls(tup):
+            return tup[0]
+
+        return list(map(sc_cls, cls.SPEC_CONVERTERS.values()))
+    
+    @classmethod
+    def runtime_spec_converters(cls, tasks):
+        deps = set()
+        for task in tasks:
+            spec_type = task.task_spec.spec_type
+            if spec_type in cls.SPEC_CONVERTERS:
+                deps.add(cls.SPEC_CONVERTERS[spec_type][1])
+        return sorted(list(deps))
+
 
 class Compiler:
     SERIALIZER_VERSION = "1.0-supreme-spoon"
-
-    SPEC_CONVERTERS = {
-        "ManualTask": ManualTaskConverter,
-        "ScriptTask": ScriptTaskConverter,
-    }
 
     @classmethod
     def parse_workflow(cls, process, bpmn_files):
@@ -26,7 +44,7 @@ class Compiler:
     @classmethod
     def get_serializer(cls):
         wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
-            cls.SPEC_CONVERTERS.values()
+            Dependencies.compile_time_spec_converters()
         )
         return BpmnWorkflowSerializer(wf_spec_converter, version=cls.SERIALIZER_VERSION)
 
@@ -37,8 +55,9 @@ class Compiler:
         for task in tasks:
             print(task.task_spec.spec_type)
         serialized = cls.get_serializer().workflow_to_dict(wf)
+        spec_converters = Dependencies.runtime_spec_converters(tasks)
 
-        Emitter.emit(serialized, cls.SERIALIZER_VERSION, output_filename)
+        Emitter.emit(serialized, cls.SERIALIZER_VERSION, spec_converters, output_filename)
 
 if __name__ == "__main__":
     import sys

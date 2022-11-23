@@ -1,8 +1,13 @@
 
 class Emitter:
+    @classmethod
+    def spec_converters_array(cls, spec_converters):
+        return f"[{', '.join(spec_converters)}]"
 
     @classmethod
-    def emit(cls, serialized, serializer_version, output_filename):
+    def emit(cls, serialized, serializer_version, spec_converters, output_filename):
+        sc_array = cls.spec_converters_array(spec_converters)
+        print(sc_array)
         with open(output_filename, "w") as f:
             f.write(f"""
 from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
@@ -11,12 +16,8 @@ from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConver
 
 
 SERIALIZER_VERSION = "{serializer_version}"
-wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
-    [
-        ManualTaskConverter,
-        ScriptTaskConverter,
-    ]
-)
+spec_converters = {sc_array}
+wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(spec_converters)
 serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
 serialized = {serialized}
 
