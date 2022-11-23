@@ -9,10 +9,15 @@
       <bpmn:incoming>Flow_0vsyo0z</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0vsyo0z" sourceRef="Activity_0jvfn7c" targetRef="Event_0f7r3q9" />
-    <bpmn:scriptTask id="Activity_0jvfn7c">
+    <bpmn:scriptTask id="Activity_0jvfn7c" name="build directory paths">
       <bpmn:incoming>Flow_0my7q5j</bpmn:incoming>
       <bpmn:outgoing>Flow_0vsyo0z</bpmn:outgoing>
-      <bpmn:script>copy_bpmn_files()</bpmn:script>
+      <bpmn:script>import os
+from pathlib import Path
+
+home_dir = Path.home()
+download_dir = os.path.join(home_dir, "Downloads")
+project_dir = os.path.join(home_dir, "projects", "github", "jbirddog", "supreme-spoon")</bpmn:script>
     </bpmn:scriptTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
@@ -25,6 +30,7 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0nlzz3t_di" bpmnElement="Activity_0jvfn7c">
         <dc:Bounds x="270" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0my7q5j_di" bpmnElement="Flow_0my7q5j">
         <di:waypoint x="215" y="177" />
