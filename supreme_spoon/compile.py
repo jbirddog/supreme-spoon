@@ -111,8 +111,4 @@ if __name__ == "__main__":
     input_filename = sys.argv[2]
     output_filename = sys.argv[3]
 
-    #process = "MoveBPMNFiles"
-    #input_filename = "examples/move_bpmn/move_bpmn.bpmn"
-    #output_filename = "examples/move_bpmn/move_bpmn.py"
-
     Compiler.compile(process, input_filename, output_filename)
