@@ -25,6 +25,10 @@ class Dependencies:
         deps = set()
         for task in tasks:
             spec_type = task.task_spec.spec_type
+            if spec_type == "Manual Task":
+                print(f"{spec_type}: {task.task_spec.name}")
+                print(task.task_spec.description.title())
+                print(task.task_spec.extensions)
             if spec_type in cls.SPEC_CONVERTERS:
                 deps.add(cls.SPEC_CONVERTERS[spec_type][1])
         return sorted(list(deps))
@@ -49,13 +53,45 @@ class Compiler:
         return BpmnWorkflowSerializer(spec_converter, version=cls.SERIALIZER_VERSION)
 
     @classmethod
+    def build_manual_task_metadata(cls, task):
+        task_spec = task.task_spec
+        metadata = task_spec.extensions or {}
+        if task_spec.description is not None:
+            metadata["description"] = task_spec.description
+        if task_spec.documentation is not None:
+            metadata["documentation"] = task_spec.documentation
+        return (task_spec.name, metadata)
+
+    @classmethod
+    def build_engine_step_metadata(cls, task):
+        return task.task_spec.name
+
+    @classmethod
+    def build_grouped_task_metadata(cls, tasks):
+        group_builder = {
+            "Manual Task": ("manual", cls.build_manual_task_metadata),
+        }
+        default_group_builder = ("engine", cls.build_engine_step_metadata)
+        groups = {}
+        for task in tasks:
+            spec_type = task.task_spec.spec_type
+            group_key, metadata_builder = group_builder.get(spec_type, default_group_builder)
+            if group_key not in groups:
+                groups[group_key] = []
+            group_metadata = groups[group_key]
+            group_metadata.append(metadata_builder(task))
+        return groups
+
+    @classmethod
     def compile(cls, process, input_filename, output_filename):
         workflow = cls.parse_workflow(process, [input_filename])
         tasks = workflow.get_tasks()
         serialized = cls.get_serializer().workflow_to_dict(workflow)
         spec_converters = Dependencies.runtime_spec_converters(tasks)
+        grouped_task_metadata = cls.build_grouped_task_metadata(tasks)
+        print(grouped_task_metadata)
 
-        Emitter.emit(process, serialized, cls.SERIALIZER_VERSION, spec_converters, output_filename)
+        Emitter.emit(process, serialized, cls.SERIALIZER_VERSION, spec_converters, grouped_task_metadata, output_filename)
 
 if __name__ == "__main__":
     import sys

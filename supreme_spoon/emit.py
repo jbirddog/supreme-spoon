@@ -13,7 +13,7 @@ class Emitter:
         return f"[{', '.join(spec_converters)}]"
 
     @classmethod
-    def emit(cls, class_name, serialized, serializer_version, spec_converters, output_filename):
+    def emit(cls, class_name, serialized, serializer_version, spec_converters, grouped_task_metadata, output_filename):
         sc_imports = cls.spec_converter_imports(spec_converters)
         sc_array = cls.spec_converters_array(spec_converters)
         with open(output_filename, "w") as f:
