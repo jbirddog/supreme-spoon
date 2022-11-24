@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_96f6665" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.0.0-dev">
-  <bpmn:process id="Proccess_3qizfj5" isExecutable="true">
+  <bpmn:process id="ParallelGatewayWorkflow" isExecutable="true">
     <bpmn:scriptTask id="Activity_1ewv0kb">
       <bpmn:incoming>Flow_1pitxjc</bpmn:incoming>
       <bpmn:outgoing>Flow_0iqfly5</bpmn:outgoing>

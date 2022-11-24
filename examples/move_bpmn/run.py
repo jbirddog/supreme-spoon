@@ -1,4 +1,4 @@
-from move_bpmn import MoveBPMNFiles
+from generated.move_bpmn import MoveBPMNFiles
 
 if __name__ == "__main__":
     workflow = MoveBPMNFiles()
