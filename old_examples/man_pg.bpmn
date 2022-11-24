@@ -22,7 +22,7 @@
     <bpmn:scriptTask id="Activity_0kapn49">
       <bpmn:incoming>Flow_19o9wjn</bpmn:incoming>
       <bpmn:outgoing>Flow_0xt37g5</bpmn:outgoing>
-      <bpmn:script>result = var1 + xyz_var</bpmn:script>
+      <bpmn:script>result = var1 + 77</bpmn:script>
     </bpmn:scriptTask>
     <bpmn:parallelGateway id="Gateway_017jnp6">
       <bpmn:incoming>Flow_06e9ehh</bpmn:incoming>

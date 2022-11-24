@@ -1,84 +1,118 @@
 from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
 from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
 from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
+from SpiffWorkflow.spiff.serializer.task_spec_converters import ManualTaskConverter
 from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
-from SpiffWorkflow.task import TaskState
 
+from emit import Emitter
 
-SERIALIZER_VERSION = "1.0-supreme-spoon"
-wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
-    [
-        ScriptTaskConverter,
-    ]
-)
-_serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
+class Dependencies:
+
+    SPEC_CONVERTERS = {
+        "Manual Task": (ManualTaskConverter, "ManualTaskConverter"),
+        "Script Task": (ScriptTaskConverter, "ScriptTaskConverter"),
+    }
+
+    @classmethod
+    def compile_time_spec_converters(cls):
+        def sc_cls(tup):
+            return tup[0]
+
+        return list(map(sc_cls, cls.SPEC_CONVERTERS.values()))
+    
+    @classmethod
+    def runtime_spec_converters(cls, tasks):
+        deps = set()
+        for task in tasks:
+            spec_type = task.task_spec.spec_type
+            if spec_type in cls.SPEC_CONVERTERS:
+                deps.add(cls.SPEC_CONVERTERS[spec_type][1])
+        return sorted(list(deps))
 
 
 class Compiler:
+    SERIALIZER_VERSION = "1.0-supreme-spoon"
 
     @classmethod
-    def parse_workflow(self, parser, process, bpmn_files):
+    def parse_workflow(cls, process, bpmn_files):
+        parser = SpiffBpmnParser()
         parser.add_bpmn_files(bpmn_files)
         top_level = parser.get_spec(process)
         subprocesses = parser.find_all_specs()
         return BpmnWorkflow(top_level, subprocesses)
 
     @classmethod
-    def compile(self, process, input_filename, output_filename):
-        parser = SpiffBpmnParser()
-        wf = self.parse_workflow(parser, process, [input_filename])
-        #wf.do_engine_steps()
-        #print(wf.data)
-        #return
-        serialized = _serializer.workflow_to_dict(wf)
+    def get_serializer(cls):
+        spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
+            Dependencies.compile_time_spec_converters()
+        )
+        return BpmnWorkflowSerializer(spec_converter, version=cls.SERIALIZER_VERSION)
 
-        with open(output_filename, "w") as f:
-            f.write(f"""
-from SpiffWorkflow.bpmn.serializer.workflow import BpmnWorkflowSerializer
-from SpiffWorkflow.bpmn.workflow import BpmnWorkflow
-from SpiffWorkflow.spiff.parser.process import SpiffBpmnParser
-from SpiffWorkflow.spiff.serializer.task_spec_converters import ScriptTaskConverter
-from SpiffWorkflow.task import TaskState
+    @classmethod
+    def get_spec_types(cls, tasks):
+        spec_types = set()
+        for task in tasks:
+            spec_types.add(task.task_spec.spec_type)
+        return spec_types
 
+    @classmethod
+    def build_manual_task_metadata(cls, task):
+        task_spec = task.task_spec
+        metadata = task_spec.extensions or {}
+        if task_spec.description is not None:
+            metadata["description"] = task_spec.description
+        if task_spec.documentation is not None:
+            metadata["documentation"] = task_spec.documentation
+        return (task_spec.name, metadata)
 
-SERIALIZER_VERSION = "1.0-supreme-spoon"
-wf_spec_converter = BpmnWorkflowSerializer.configure_workflow_spec_converter(
-    [
-        ScriptTaskConverter,
-    ]
-)
-serializer = BpmnWorkflowSerializer(wf_spec_converter, version=SERIALIZER_VERSION)
-serialized = {serialized}
+    @classmethod
+    def build_engine_step_metadata(cls, task):
+        return task.task_spec.name
 
-wf = serializer.workflow_from_dict(serialized)
-wf.do_engine_steps()
-print(wf.data)
-""")
-        
+    @classmethod
+    def build_grouped_task_metadata(cls, tasks):
+        group_builder = {
+            "Manual Task": ("manual", cls.build_manual_task_metadata),
+        }
+        default_group_builder = ("engine", cls.build_engine_step_metadata)
+        groups = {}
+        for task in tasks:
+            spec_type = task.task_spec.spec_type
+            group_key, metadata_builder = group_builder.get(spec_type, default_group_builder)
+            if group_key not in groups:
+                groups[group_key] = []
+            group_metadata = groups[group_key]
+            group_metadata.append(metadata_builder(task))
+        return groups
+
+    @classmethod
+    def compile(cls, process, input_filename, output_filename):
+        workflow = cls.parse_workflow(process, [input_filename])
+        tasks = workflow.get_tasks()
+        serialized = cls.get_serializer().workflow_to_dict(workflow)
+        spec_converters = Dependencies.runtime_spec_converters(tasks)
+        spec_types = cls.get_spec_types(tasks)
+        grouped_task_metadata = cls.build_grouped_task_metadata(tasks)
+
+        Emitter.emit(process,
+            serialized, 
+            cls.SERIALIZER_VERSION, 
+            spec_converters,
+            spec_types,
+            grouped_task_metadata, 
+            output_filename
+        )
 
 if __name__ == "__main__":
     import sys
 
+    # TODO: argparse
     #process = sys.argv[1]
-    ##input_filename = sys.argv[2]
+    #input_filename = sys.argv[2]
     #output_filename = sys.argv[3]
 
-    print('\n------------------------\n')
-
-    process = "empty_workflow"
-    input_filename = "examples/emp.bpmn"
-    output_filename = "examples/emp.spiff.py"
-
-    process = "Proccess_v60ufvy"
-    input_filename = "supreme_spoon/bpmn/spoon.bpmn"
-    output_filename = "examples/spoon.py"
+    process = "MoveBPMNFiles"
+    input_filename = "examples/move_bpmn/move_bpmn.bpmn"
+    output_filename = "examples/move_bpmn/move_bpmn.py"
 
     Compiler.compile(process, input_filename, output_filename)
-
-    # 1-1000 vanilla spiff parse/do_engine_steps = ~5s runtime on my machine
-    for i in range(1, 2):
-        process = "Proccess_3qizfj5"
-        input_filename = "examples/pg.bpmn"
-        output_filename = "examples/pg.spiff.py"
-
-        Compiler.compile(process, input_filename, output_filename)
