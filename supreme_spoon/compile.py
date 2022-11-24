@@ -25,10 +25,6 @@ class Dependencies:
         deps = set()
         for task in tasks:
             spec_type = task.task_spec.spec_type
-            if spec_type == "Manual Task":
-                print(f"{spec_type}: {task.task_spec.name}")
-                print(task.task_spec.description.title())
-                print(task.task_spec.extensions)
             if spec_type in cls.SPEC_CONVERTERS:
                 deps.add(cls.SPEC_CONVERTERS[spec_type][1])
         return sorted(list(deps))
