@@ -29,14 +29,27 @@ class Emitter:
     def handle_manual_task(props):
         def _handler(task):
             print(f"WTF: {props['instructionsForEndUser']}")
+            input("Press any enter to continue")
         return _handler""")
 
             for metadata in grouped_task_metadata["manual"]:
                 task_handler_map[metadata[0]] = ("handle_manual_task", metadata[1])
 
+        output = task_handlers
+
+        if len(output) > 0:
+            output.append("""
+    TASK_HANDLERS = {""")
+
+            for k, v in task_handler_map.items():
+                output.append(f'        "{k}": {v[0]}({v[1]}),')
+
+            output.append("""
+    }""")
+
         #task_handlers.append(f"TASK_HANDLERS = {task_handler_map}")
 
-        return task_handlers
+        return output
 
     @classmethod
     def emit(cls, 
@@ -85,6 +98,8 @@ class {class_name}:
         while not workflow.is_completed():
             ready_tasks = workflow.get_ready_user_tasks()
             for task in ready_tasks:
+                if task.task_spec.name in self.TASK_HANDLERS:
+                    self.TASK_HANDLERS[task.task_spec.name](task)
                 task.complete()
             workflow.refresh_waiting_tasks()
             workflow.do_engine_steps()
