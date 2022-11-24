@@ -60,7 +60,9 @@ Each example has a `run.py` in its directory:
 In rough order:
 
 1. User Tasks
+1. DMN files
+1. Multiple BPMN files
 2. More SpiffWorkflow configuration support
-3. Scaffolding support
+3. Scaffolding generation
 4. More emitters
 5. Single step execution support
