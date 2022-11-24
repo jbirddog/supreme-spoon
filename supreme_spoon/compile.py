@@ -53,6 +53,13 @@ class Compiler:
         return BpmnWorkflowSerializer(spec_converter, version=cls.SERIALIZER_VERSION)
 
     @classmethod
+    def get_spec_types(cls, tasks):
+        spec_types = set()
+        for task in tasks:
+            spec_types.add(task.task_spec.spec_type)
+        return spec_types
+
+    @classmethod
     def build_manual_task_metadata(cls, task):
         task_spec = task.task_spec
         metadata = task_spec.extensions or {}
@@ -88,10 +95,17 @@ class Compiler:
         tasks = workflow.get_tasks()
         serialized = cls.get_serializer().workflow_to_dict(workflow)
         spec_converters = Dependencies.runtime_spec_converters(tasks)
+        spec_types = cls.get_spec_types(tasks)
         grouped_task_metadata = cls.build_grouped_task_metadata(tasks)
-        print(grouped_task_metadata)
 
-        Emitter.emit(process, serialized, cls.SERIALIZER_VERSION, spec_converters, grouped_task_metadata, output_filename)
+        Emitter.emit(process,
+            serialized, 
+            cls.SERIALIZER_VERSION, 
+            spec_converters,
+            spec_types,
+            grouped_task_metadata, 
+            output_filename
+        )
 
 if __name__ == "__main__":
     import sys
