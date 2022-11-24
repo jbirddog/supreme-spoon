@@ -11,3 +11,7 @@ poetry run python supreme_spoon/compile.py "EmptyWorkflow" \
 poetry run python supreme_spoon/compile.py "ParallelGatewayWorkflow" \
   examples/parallel_gateway/bpmn/parallel_gateway.bpmn \
   examples/parallel_gateway/generated/parallel_gateway.py
+
+poetry run python supreme_spoon/compile.py "ParallelGatewayManualWorkflow" \
+  examples/parallel_gateway_manual/bpmn/parallel_gateway_manual.bpmn \
+  examples/parallel_gateway_manual/generated/parallel_gateway_manual.py
