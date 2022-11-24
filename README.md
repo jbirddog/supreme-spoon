@@ -29,6 +29,10 @@ poetry run python supreme_spoon/compile.py "ParallelGatewayManualWorkflow" \
   examples/parallel_gateway_manual/generated/parallel_gateway_manual.py
 ```
 
+By convention in the `examples` directory, bpmn files and the generated output are in separate subdirectories.
+
 ## Execute
 
-`python examples/man_pg.py`
+Each example has a `run.py` in its directory:
+
+`poetry run python examples/parallel_gateway_manual/run.py`
