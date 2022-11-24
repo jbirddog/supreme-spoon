@@ -1,0 +1,5 @@
+#!/bin/sh
+
+poetry run python supreme_spoon/compile.py "MoveBPMNFiles" \
+  examples/move_bpmn/bpmn/move_bpmn.bpmn \
+  examples/move_bpmn/generated/move_bpmn.py
