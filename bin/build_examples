@@ -7,3 +7,7 @@ poetry run python supreme_spoon/compile.py "MoveBPMNFiles" \
 poetry run python supreme_spoon/compile.py "EmptyWorkflow" \
   examples/empty/bpmn/empty.bpmn \
   examples/empty/generated/empty.py
+
+poetry run python supreme_spoon/compile.py "ParallelGatewayWorkflow" \
+  examples/parallel_gateway/bpmn/parallel_gateway.bpmn \
+  examples/parallel_gateway/generated/parallel_gateway.py
