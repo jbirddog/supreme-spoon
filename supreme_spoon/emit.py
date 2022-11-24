@@ -50,8 +50,7 @@ class Emitter:
             for k, v in task_handler_map.items():
                 output.append(f'        "{k}": {v[0]}(**{v[1]}),')
 
-            output.append("""
-    }""")
+            output.append("\t}")
 
         #task_handlers.append(f"TASK_HANDLERS = {task_handler_map}")
 
