@@ -26,10 +26,16 @@ class Emitter:
         task_handler_map = {}
         if "manual" in grouped_task_metadata:
             task_handlers.append("""
-    def handle_manual_task(props):
+    def handle_manual_task(instructionsForEndUser=None, description=None, documentation=None):
         def _handler(task):
-            print(f"WTF: {props['instructionsForEndUser']}")
-            input("Press any enter to continue")
+            print("\\nManual Task:\\n")
+            if description:
+                print(f"\\t{description.title()}\\n")
+            if instructionsForEndUser:
+                print(f"\\t{instructionsForEndUser}\\n")
+            if documentation:
+                print(f"\\t{documentation}\\n")
+            input("Press enter to continue")
         return _handler""")
 
             for metadata in grouped_task_metadata["manual"]:
@@ -42,7 +48,7 @@ class Emitter:
     TASK_HANDLERS = {""")
 
             for k, v in task_handler_map.items():
-                output.append(f'        "{k}": {v[0]}({v[1]}),')
+                output.append(f'        "{k}": {v[0]}(**{v[1]}),')
 
             output.append("""
     }""")
